@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prediction</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="navbar">
+  <div class="logo">SEED</div>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a class="active" href="/predict">Check</a>
+    <a href="#">Contact</a>
+  </div>
+</div>
+
+<main class="page-shell">
+  <div
+    id="predict-meta"
+    data-initial-state="{{ result_state or 'idle' }}"
+    data-initial-text="{{ (prediction_text or '')|e }}"
+    hidden
+  ></div>
+
+  <div class="breadcrumb">
+    Home / <b>Predict</b>
+    <h2>Prediction</h2>
+  </div>
+
+  <div class="predict-layout">
+    <div class="form-card">
+      <h3>Enter the details:</h3>
+
+      <form action="/predict" method="POST" class="seed-form" id="predict-form">
+        <div class="form-grid">
+          {% for field in field_specs %}
+          <div class="field-group">
+            <label>{{ field.label }}</label>
+            <input
+              type="number"
+              step="any"
+              name="{{ field.name }}"
+              value="{{ form_values.get(field.name, '') }}"
+              required
+            >
+          </div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn submit">Submit</button>
+      </form>
+    </div>
+
+    <div class="side-panel">
+      <div class="result-card {{ result_state }}" id="result-card">
+        <div class="result-head">
+          <span class="status-chip" id="status-chip">Live Preview</span>
+          <span class="status-count" id="status-count">0 / 12 filled</span>
+        </div>
+        <h3 id="result-title">Prediction Preview</h3>
+        {% if prediction_text %}
+        <p id="result-text" class="result-text">{{ prediction_text }}</p>
+        {% else %}
+        <p id="result-text" class="result-text">Fill the form and submit to see the prediction result here.</p>
+        {% endif %}
+        <div class="progress-track">
+          <span class="progress-fill" id="progress-fill"></span>
+        </div>
+        <p class="result-note" id="result-note">The result updates as you enter the values.</p>
+      </div>
+
+      <div class="image-card">
+        <img src="{{ url_for('static', filename='images/seed.jpg') }}" alt="Pumpkin seed">
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const form = document.getElementById("predict-form");
+  const inputs = Array.from(form.querySelectorAll("input"));
+  const resultCard = document.getElementById("result-card");
+  const resultTitle = document.getElementById("result-title");
+  const resultText = document.getElementById("result-text");
+  const resultNote = document.getElementById("result-note");
+  const statusChip = document.getElementById("status-chip");
+  const statusCount = document.getElementById("status-count");
+  const progressFill = document.getElementById("progress-fill");
+  const predictMeta = document.getElementById("predict-meta");
+  const initialState = predictMeta.dataset.initialState || "idle";
+  const initialText = predictMeta.dataset.initialText || "";
+  let hasEditedAfterLoad = false;
+
+  function setResultState(state, text, filledCount) {
+    resultCard.classList.remove("idle", "ready", "loading", "success", "error");
+    if (state) {
+      resultCard.classList.add(state);
+    }
+
+    const percentage = (filledCount / inputs.length) * 100;
+    statusCount.textContent = `${filledCount} / ${inputs.length} filled`;
+    progressFill.style.width = `${percentage}%`;
+
+    if (state === "success") {
+      statusChip.textContent = "Submitted";
+      resultTitle.textContent = "Predicted Class";
+      resultNote.textContent = "Result based on the submitted values.";
+    } else if (state === "ready") {
+      statusChip.textContent = "Ready";
+      resultTitle.textContent = "Ready to Submit";
+      resultNote.textContent = "All values are added. Click Submit to see the result.";
+    } else if (state === "loading") {
+      statusChip.textContent = "Submitting";
+      resultTitle.textContent = "Processing Prediction";
+      resultNote.textContent = "Please wait while the form is being submitted.";
+    } else if (state === "error") {
+      statusChip.textContent = "Error";
+      resultTitle.textContent = "Prediction Problem";
+      resultNote.textContent = "Some values look invalid. Please review the inputs.";
+    } else {
+      statusChip.textContent = "Pending";
+      resultTitle.textContent = "Prediction Preview";
+      resultNote.textContent = "Fill all values and click Submit to see the result.";
+    }
+
+    resultText.textContent = text;
+  }
+
+  function updateResultPanel() {
+    const filledCount = inputs.filter((input) => input.value.trim() !== "").length;
+
+    if ((initialState === "success" || initialState === "error") && !hasEditedAfterLoad) {
+      setResultState(initialState, initialText, filledCount);
+      return;
+    }
+
+    if (filledCount === inputs.length) {
+      setResultState("ready", "All values are filled. Click Submit to see the result.", filledCount);
+    } else {
+      setResultState("idle", `${filledCount} of ${inputs.length} values added. Fill all values and click Submit to see the result.`, filledCount);
+    }
+  }
+
+  inputs.forEach((input) => {
+    input.addEventListener("input", () => {
+      hasEditedAfterLoad = true;
+      updateResultPanel();
+    });
+  });
+
+  form.addEventListener("submit", () => {
+    const filledCount = inputs.filter((input) => input.value.trim() !== "").length;
+    setResultState("loading", "Submitting values...", filledCount);
+  });
+
+  updateResultPanel();
+</script>
+
+</body>
+</html>

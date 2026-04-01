@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seed</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="home-page">
+
+<div class="navbar">
+  <div class="logo">SEED</div>
+  <div class="nav-links">
+    <a class="active" href="/">Home</a>
+    <a href="/predict">Check</a>
+    <a href="#">Contact</a>
+  </div>
+</div>
+
+<main class="page-shell">
+  <section class="home-hero">
+    <div class="hero-card">
+      <span class="badge">Pumpkin Seed Classifier</span>
+      <h1>Simple seed prediction using measurement values</h1>
+      <p>Enter the seed features and get a quick classification result in a cleaner and easier page layout.</p>
+      <a href="/predict" class="btn hero-btn">Get Started</a>
+
+      <div class="feature-strip">
+        <div class="mini-card">
+          <strong>12 Inputs</strong>
+          <span>All values in one form</span>
+        </div>
+        <div class="mini-card">
+          <strong>Quick Result</strong>
+          <span>Prediction after submit</span>
+        </div>
+        <div class="mini-card">
+          <strong>Easy to Use</strong>
+          <span>Simple page design</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>
